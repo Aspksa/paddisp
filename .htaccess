@@ -1,0 +1,10 @@
+# Запасной вариант, если корень сайта указывает на папку проекта, а не на public/.
+# Рекомендуемая схема описана в README: корень сайта = public/.
+Options -Indexes
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>

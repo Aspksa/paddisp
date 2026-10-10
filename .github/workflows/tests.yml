@@ -1,0 +1,39 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: paddisp_test
+          MYSQL_USER: paddisp
+          MYSQL_PASSWORD: paddisp
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=5s --health-timeout=5s --health-retries=20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo_mysql, mbstring, pcntl, posix
+          coverage: none
+      - name: Lint
+        run: find app bin config database public tests -name '*.php' -print0 | xargs -0 -n1 php -l > /dev/null
+      - name: Tests
+        env:
+          TEST_DB_HOST: 127.0.0.1
+          TEST_DB_PORT: 3306
+          TEST_DB_NAME: paddisp_test
+          TEST_DB_USER: paddisp
+          TEST_DB_PASS: paddisp
+        run: php tests/run.php
